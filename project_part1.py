@@ -118,7 +118,9 @@ class Game():
 
         self.direction = "Left" #initial direction of the snake
         self.gameNotOver = True
-        self.preyCoordinates = None
+
+        self.preyCoordinates = tuple() # i added this variable to keep track of the current preys position
+ 
         self.createNewPrey()
 
     def superloop(self) -> None:
@@ -129,7 +131,7 @@ class Game():
             Use the SPEED constant to set how often the move tasks
             are generated.
         """
-        SPEED = 0.15 # speed of snake updates (sec)
+        SPEED = 0.05 # speed of snake updates (sec)
         while self.gameNotOver:
             self.move()
             self.queue.put_nowait({"move": self.snakeCoordinates})
@@ -166,13 +168,26 @@ class Game():
             and position) should be correctly updated.
         """
 
-        newSnakeCoordinates = self.calculateNewCoordinates()
+        def isPreyEaten(newSnakeCoordinates: tuple) -> bool:
+            """
+                This function checks if the snake has eaten the prey
+                when moving to its new coordinates.
+            """
+            COLLISION_PROXIMITY = 10 # sets how close the snake must come to the prey to eat it
+            xSnake, ySnake = newSnakeCoordinates
+            xPrey, yPrey = self.preyCoordinates
+            if abs(xSnake - xPrey) < COLLISION_PROXIMITY and abs(ySnake - yPrey) < COLLISION_PROXIMITY:
+                return True
+
+            return False 
+
+        newSnakeCoordinates = self.calculateNewCoordinates() # get new snake coordinates
         
         self.isGameOver(newSnakeCoordinates) # check if the game is over
 
         self.snakeCoordinates.append(newSnakeCoordinates) # add new snake coordinate to end of snakeCoordinates
 
-        if self.isPreyEaten(newSnakeCoordinates): # check if the prey has been eaten
+        if isPreyEaten(newSnakeCoordinates): # check if the prey has been eaten
             self.score += 1
             self.queue.put_nowait({"score": self.score})
             self.createNewPrey()
@@ -236,20 +251,7 @@ class Game():
         x, y = random.randint(0 + THRESHOLD, WINDOW_WIDTH - THRESHOLD), random.randint(0 + THRESHOLD, WINDOW_HEIGHT - THRESHOLD) # random x and y coordinates for new prey      
         coordinates = (x - 5, y - 5, x + 5, y + 5) # prey coordinates
         self.queue.put_nowait({"prey": coordinates}) # add task to queue
-        self.preyCoordinates = x, y
-
-    def isPreyEaten(self, newSnakeCoordinates: tuple) -> bool:
-        """
-            This method checks if the snake has eaten the prey
-            when moving to its new coordinates.
-        """
-        COLLISION_PROXIMITY = 10 # sets how close the snake must come to the prey to eat it
-        xSnake, ySnake = newSnakeCoordinates
-        xPrey, yPrey = self.preyCoordinates
-        if abs(xSnake - xPrey) < COLLISION_PROXIMITY and abs(ySnake - yPrey) < COLLISION_PROXIMITY:
-            return True
-
-        return False        
+        self.preyCoordinates = x, y       
 
 
 
