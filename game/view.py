@@ -34,8 +34,7 @@ class Gui():
         textColour = "white"
         #instantiate and create gui
         self.root = Tk()
-        self.canvas = Canvas(self.root, width = WINDOW_WIDTH, 
-            height = WINDOW_HEIGHT, bg = BACKGROUND_COLOUR)
+        self.canvas = Canvas(self.root, width = WINDOW_WIDTH, height = WINDOW_HEIGHT, bg = BACKGROUND_COLOUR)
         self.canvas.pack()
         #create starting game icons for snake and the prey
         self.snakeIcon = self.canvas.create_line((0, 0), (0, 0), fill=ICON_COLOUR, width=SNAKE_ICON_WIDTH)
@@ -57,8 +56,10 @@ class Gui():
         self.canvas.create_window(200, 100, anchor="nw", window=gameOverButton)
 
     def notify(self, event: Event):
+        """
+        The event manager will send all recieved events here. 
+        """
         if isinstance(event, TickEvent):
-            # move snake
             points = [x for point in self.game.snakeCoordinates for x in point]
             self.canvas.coords(self.snakeIcon, *points)    
         elif isinstance(event, CreateNewPreyEvent):
